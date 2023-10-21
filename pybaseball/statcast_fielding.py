@@ -123,3 +123,22 @@ def statcast_catcher_framing(year: int, min_called_p: Union[int, str] = "q") -> 
 	# CSV includes league average player, which we drop from the result
 	return data.loc[data.last_name.notna()].reset_index(drop=True)	
 
+def statcast_stolenbases(player_id: int, season_start: int, season_end: int) -> pd.DataFrame:
+	"""
+	Retrieves the catcher's throwing stats for the given player ID and season range.
+
+	ARGUMENTS
+		player_id: The player ID for which you wish to retrieve the stats.
+		season_start: The starting year of the season range. Format: YYYY.
+		season_end: The ending year of the season range. Format: YYYY.
+	"""
+	url = f"https://baseballsavant.mlb.com/leaderboard/services/catcher-throwing/{player_id}?&n=q&season_end={season_end}&season_start={season_start}&split=no&team=&type=Cat&with_team_only=1"
+	res = requests.get(url, timeout=None)
+	if res.status_code == 200:
+		json_data = res.json()
+		df = pd.json_normalize(json_data['data'])
+		data = pd.DataFrame(df)
+		data = sanitize_statcast_columns(data)
+		return data
+	else:
+		raise ValueError("Invalid player ID or season range. Please try again.")

@@ -6,7 +6,8 @@ from pybaseball.statcast_fielding import (
 	statcast_outfield_catch_prob,
 	statcast_outfielder_jump,
 	statcast_catcher_poptime,
-	statcast_catcher_framing
+	statcast_catcher_framing,
+	statcast_stolenbases
 )
 
 def test_statcast_outs_above_average() -> None:
@@ -87,6 +88,30 @@ def test_statcast_catcher_framing() -> None:
 	assert len(result.columns) == 15
 	assert len(result) > 0
 	assert len(result.loc[result.n_called_pitches < min_called_p]) == 0
+
+def test_statcast_stolenbases() -> None:
+	# Test with valid player ID and season range
+	player_id = 645444
+	season_start = 2023
+	season_end = 2023
+	result = statcast_stolenbases(player_id, season_start, season_end)
+	assert isinstance(result, pd.DataFrame)
+	assert not result.empty
+
+	# Test with invalid player ID
+	player_id = 452354254314
+	result = statcast_stolenbases(player_id, season_start, season_end)
+	assert ValueError
+	assert isinstance(result, pd.DataFrame)
+	assert result.empty
+
+	# Test with invalid season range
+	season_start = 2032
+	season_end = 2032
+	result = statcast_stolenbases(player_id, season_start, season_end)
+	assert ValueError
+	assert isinstance(result, pd.DataFrame)
+	assert result.empty
 
 
 #test_statcast_outs_above_average_view()
